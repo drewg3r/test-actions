@@ -27,7 +27,7 @@ jobs:
         run: |
           ARCHITECTURES="amd64 arm64"
           IMAGE_NAME="my-nginx"
-          DOCKERFILE_PATH="/Dockerfile"
+          DOCKERFILE_PATH="$GITHUB_WORKSPACE/Dockerfile"
 
           for arch in $ARCHITECTURES; do
             docker build -t $IMAGE_NAME:$arch -f $DOCKERFILE_PATH --build-arg ARCH=$arch .
