@@ -1,0 +1,36 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up QEMU
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        continue-on-error: true
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker images
+        run: |
+          ARCHITECTURES="amd64 arm64"
+          IMAGE_NAME="my-nginx"
+          DOCKERFILE_PATH="/Dockerfile"
+
+          for arch in $ARCHITECTURES; do
+            docker build -t $IMAGE_NAME:$arch -f $DOCKERFILE_PATH --build-arg ARCH=$arch .
+            docker push $IMAGE_NAME:$arch
+          done
+
